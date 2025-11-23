@@ -96,8 +96,8 @@ The summary will be printed to the console and is also visible at [https://grano
 
 When you use the `-transcript` flag, the tool performs the following automated steps:
 1.  **Fetch Transcript**: Downloads subtitles/transcript from YouTube.
-2.  **Create Meeting**: Uploads the transcript to the AI backend to create a new meeting entry.
-3.  **Generate Summary**: Automatically triggers the AI summarization for that meeting.
+2.  **Hit the FAST API**: Uploads the transcript to the AI backend to create a new yt video entry.
+3.  **Generate Summary**: Automatically triggers the AI summarization for that yt video.
 4.  **Display**: Prints the summary and provides a link to view it online.
 
 You do **not** need to provide a meeting ID; the tool handles the entire process automatically.
