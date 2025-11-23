@@ -51,13 +51,24 @@ func getItag(max int) int {
 	}
 }
 
-func downloadVideo(video youtube.Video, index int, option *youtube.Option) error {
+func downloadVideo(video youtube.Video, index int, option *youtube.Option, useYtDlp bool) error {
 	ext := video.GetExtension(index)
 	filename := fmt.Sprintf("%s.%s", video.Id, ext)
 
-	fmt.Printf("Downloading → %s\n", filename)
-
-	err := video.Download(index, filename, option)
+	var err error
+	if useYtDlp {
+		// Try yt-dlp first
+		err = video.DownloadWithYtDlp(index, filename, option)
+		if err != nil {
+			fmt.Println("yt-dlp error:", err)
+			fmt.Println("Falling back to direct download...")
+			err = video.Download(index, filename, option)
+		}
+	} else {
+		// Use direct download
+		err = video.Download(index, filename, option)
+	}
+	
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -72,6 +83,7 @@ func main() {
 	itag := flag.Int("itag", 0, "Select format by itag")
 	rename := flag.Bool("rename", false, "Rename file using title")
 	mp3 := flag.Bool("mp3", false, "Extract MP3 via ffmpeg")
+	useYtDlp := flag.Bool("use-ytdlp", true, "Use yt-dlp for downloads (recommended)")
 	flag.Parse()
 
 	if *video_id == "" && len(os.Args) < 2 {
@@ -110,7 +122,7 @@ func main() {
 		Mp3:    *mp3,
 	}
 
-	err = downloadVideo(video, index, option)
+	err = downloadVideo(video, index, option, *useYtDlp)
 	if err != nil {
 		os.Exit(1)
 	}
