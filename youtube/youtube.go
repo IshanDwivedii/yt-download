@@ -249,6 +249,55 @@ func (video *Video) DownloadWithYtDlp(index int, filename string, option *Option
 	return nil
 }
 
+// DownloadTranscript downloads the video transcript (subtitles)
+func (video *Video) DownloadTranscript(filename, cookiesBrowser string) error {
+	// Check if yt-dlp is installed
+	if err := checkYtDlpInstalled(); err != nil {
+		return err
+	}
+
+	videoURL := fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Id)
+	
+	// Build yt-dlp command for subtitles
+	args := []string{
+		"--write-auto-sub",      // Write automatic subtitles
+		"--sub-lang", "en",      // English language
+		"--skip-download",       // Don't download video
+		"-o", filename,          // Output filename base
+	}
+
+	if cookiesBrowser != "" {
+		args = append(args, "--cookies-from-browser", cookiesBrowser)
+	}
+
+	args = append(args, videoURL)
+	
+	fmt.Printf("Fetching transcript for %s...\n", video.Id)
+	
+	cmd := exec.Command("yt-dlp", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to fetch transcript: %v", err)
+	}
+	
+	// yt-dlp appends language code, e.g. filename.en.vtt
+	// We want to find the generated file
+	expectedFile := filename + ".en.vtt"
+	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
+		// Try checking for just .vtt
+		expectedFile = filename + ".vtt"
+		if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
+			return fmt.Errorf("transcript file not found after download")
+		}
+	}
+	
+	fmt.Printf("\nTranscript saved to: %s\n", expectedFile)
+	return nil
+}
+
 func abbr(b int64) string {
 	s := float64(b)
 	switch {

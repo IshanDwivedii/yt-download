@@ -55,12 +55,26 @@ Run the tool with a video ID or URL:
 | `-resume` | Resume interrupted download | false |
 | `-rename` | Rename file using video title | false |
 | `-use-ytdlp` | Use yt-dlp for downloads (recommended) | true |
+| `-transcript` | Fetch transcript and summarize video | false |
+| `-api-url` | API URL for summarization | https://granola-ai-app.onrender.com |
+| `-cookies-browser` | Use browser cookies to bypass 429 errors (e.g. `chrome`, `firefox`) | "" |
 
 ### Examples
 
 **Interactive Mode (Fetch metadata and pick format):**
 ```bash
 ./ytdownload -id=dQw4w9WgXcQ
+```
+
+**Summarize Video:**
+```bash
+./ytdownload -id=dQw4w9WgXcQ -transcript
+```
+The summary will be printed to the console and is also visible at [https://granola-ai-app.vercel.app/](https://granola-ai-app.vercel.app/).
+
+**Summarize Video (with cookies to bypass 429):**
+```bash
+./ytdownload -id=dQw4w9WgXcQ -transcript -cookies-browser chrome
 ```
 
 **Direct Download (Skip menu):**
@@ -77,6 +91,16 @@ Run the tool with a video ID or URL:
 
 1. **Metadata Phase**: The tool uses a custom Go-based scraper to fetch the YouTube video page and extract the `ytInitialPlayerResponse`. This allows it to quickly display video information without needing an API key.
 2. **Download Phase**: When a download is requested, the tool invokes `yt-dlp` as a subprocess. This ensures that the download works even for videos with complex signature encryption that typically breaks simple downloaders.
+
+### Summarization Workflow
+
+When you use the `-transcript` flag, the tool performs the following automated steps:
+1.  **Fetch Transcript**: Downloads subtitles/transcript from YouTube.
+2.  **Create Meeting**: Uploads the transcript to the AI backend to create a new meeting entry.
+3.  **Generate Summary**: Automatically triggers the AI summarization for that meeting.
+4.  **Display**: Prints the summary and provides a link to view it online.
+
+You do **not** need to provide a meeting ID; the tool handles the entire process automatically.
 
 ## License
 
